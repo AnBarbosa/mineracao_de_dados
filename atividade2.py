@@ -10,13 +10,14 @@
 # 
 # 
 
-# In[20]:
+# In[41]:
 
 
 import os
 import pandas as pd
 import numpy as np
 
+from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 
@@ -76,3 +77,28 @@ stds_tree = grid_search_tree.cv_results_['std_test_score']
 
 print(f"KNN:  {np.mean(means_knn):.3f} +/- {np.mean(stds_knn):.3f}\n"+
       f"TREE: {np.mean(means_tree):.3f} +/- {np.mean(stds_tree):.3f}")
+
+
+# ## OUTRA SOLUCAO
+
+# In[45]:
+
+
+
+param_grid= [{'max_depth': [None, 2]} ,  # Tree
+             {'n_neighbors': [3, 5], 'weights': ['uniform','distance']}] # KNN
+
+# Deve ser criado fora do loop, para sempre comparar a mesma coisa
+divisor = StratifiedKFold(n_splits = 5, random_state = 1) 
+for clf, parameters in zip([tree, knn], param_grid):
+    grid_search = GridSearchCV(clf, parameters, cv = divisor)
+    grid_search.fit(X, y)
+    
+    
+    print( grid_search.best_estimator_)
+    print( np.mean(grid_search.cv_results_['mean_test_score']))
+    print( np.mean(grid_search.cv_results_['std_test_score']))
+    print("-"*20)
+    
+
+?pd.read_csv
